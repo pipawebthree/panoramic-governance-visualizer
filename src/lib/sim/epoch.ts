@@ -1,4 +1,4 @@
-import { EpochParams, EpochResult, User, Protocol } from './types'
+import { EpochParams, EpochResult } from './types'
 import { generateUsers, generateProtocols } from './generators'
 
 export function runEpoch(params: EpochParams): EpochResult {

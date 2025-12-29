@@ -38,7 +38,7 @@ describe('runEpoch', () => {
 
   it('should distribute rewards only to active users', () => {
     const result = runEpoch(baseParams)
-    const activeUsers = result.users.filter((u) => u.isActive)
+    // const activeUsers = result.users.filter((u) => u.isActive) // Unused variable commented out
     const totalRewards = result.users.reduce((sum, u) => sum + u.rewardFromFees, 0)
     
     expect(totalRewards).toBeCloseTo(result.feePool, 2)
