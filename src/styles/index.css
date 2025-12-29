@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-dark-border;
+  }
+  
+  body {
+    @apply bg-dark-bg text-dark-text antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+  }
+  
+  h1, h2 {
+    @apply font-heading;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+}
+
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.2s ease-in-out;
+  }
+}
+
+@layer components {
+  /* Custom slider styling for Abstract branding */
+  input[type="range"] {
+    @apply appearance-none bg-dark-surfaceHover rounded-lg h-2;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 rounded-full bg-dark-accent cursor-pointer;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    @apply w-4 h-4 rounded-full bg-dark-accent cursor-pointer border-0;
+  }
+  
+  input[type="range"]::-ms-thumb {
+    @apply w-4 h-4 rounded-full bg-dark-accent cursor-pointer border-0;
+  }
+  
+  /* Checkbox styling */
+  input[type="checkbox"] {
+    @apply accent-dark-accent;
+  }
+}
+
