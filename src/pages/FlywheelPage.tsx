@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 
 interface Node {
   id: string
@@ -76,7 +77,13 @@ export default function FlywheelPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-8"
+    >
       <div>
         <h1 className="text-4xl font-bold mb-4">The Panoramic Governance Flywheel</h1>
         <p className="text-dark-textMuted text-lg max-w-3xl">
@@ -86,7 +93,7 @@ export default function FlywheelPage() {
         </p>
       </div>
 
-      <div className="bg-dark-surface rounded-lg p-8 border border-dark-border">
+      <div className="glass-card-hover p-8">
         <div className="relative" style={{ height: '400px' }}>
           <svg
             width="100%"
@@ -102,7 +109,7 @@ export default function FlywheelPage() {
               const isActive = isPlaying && idx <= animationStep
               
               return (
-                <line
+                <motion.line
                   key={`${conn.from}-${conn.to}`}
                   x1={fromNode.x}
                   y1={fromNode.y}
@@ -113,6 +120,9 @@ export default function FlywheelPage() {
                   strokeDasharray={isActive ? '0' : '5,5'}
                   className="transition-smooth"
                   markerEnd="url(#arrowhead)"
+                  initial={{ pathLength: 0 }}
+                  animate={isActive ? { pathLength: 1 } : { pathLength: 0 }}
+                  transition={{ duration: 0.5 }}
                 />
               )
             })}
@@ -137,7 +147,7 @@ export default function FlywheelPage() {
               
               return (
                 <g key={node.id}>
-                  <circle
+                  <motion.circle
                     cx={node.x}
                     cy={node.y}
                     r={isHovered ? 35 : 30}
@@ -147,6 +157,18 @@ export default function FlywheelPage() {
                     className="transition-smooth cursor-pointer"
                     onMouseEnter={() => setHoveredNode(node.id)}
                     onMouseLeave={() => setHoveredNode(null)}
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      opacity: [0.8, 1, 0.8],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    style={{
+                      filter: isHovered ? 'drop-shadow(0 0 10px #ABFE2C)' : 'drop-shadow(0 0 5px #ABFE2C)',
+                    }}
                   />
                   <text
                     x={node.x}
@@ -167,46 +189,61 @@ export default function FlywheelPage() {
 
         {/* Tooltip */}
         {hoveredNode && (
-          <div className="mt-4 p-4 bg-dark-surfaceHover rounded-lg border border-dark-border">
-            <h3 className="font-semibold mb-2">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-4 p-4 glass-card border-dark-borderGlow"
+          >
+            <h3 className="font-semibold mb-2 text-dark-accent">
               {nodes.find((n) => n.id === hoveredNode)?.label}
             </h3>
             <p className="text-sm text-dark-textMuted">
               {nodes.find((n) => n.id === hoveredNode)?.description}
             </p>
-          </div>
+          </motion.div>
         )}
 
         {/* Play button */}
         <div className="mt-6 flex justify-center">
-          <button
+          <motion.button
             onClick={handlePlay}
             disabled={isPlaying}
-            className="px-6 py-3 bg-dark-accent hover:bg-dark-accentHover text-black rounded-lg font-medium transition-smooth disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-dark-accent hover:bg-dark-accentHover text-black rounded-lg font-medium transition-smooth disabled:opacity-50 disabled:cursor-not-allowed shadow-glow-green"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             {isPlaying ? 'Playing...' : 'Play Animation'}
-          </button>
+          </motion.button>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-dark-surface rounded-lg p-6 border border-dark-border">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card-hover p-6"
+        >
           <h2 className="text-xl font-semibold mb-4">Activity Participation Threshold (APT)</h2>
           <p className="text-dark-textMuted">
             Only users who meet a minimum activity score receive rewards from the fee pool.
             This ensures that rewards go to active participants, not passive holders.
           </p>
-        </div>
+        </motion.div>
         
-        <div className="bg-dark-surface rounded-lg p-6 border border-dark-border">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-card-hover p-6"
+        >
           <h2 className="text-xl font-semibold mb-4">Gauge-like Emissions</h2>
           <p className="text-dark-textMuted">
             Protocol emissions are allocated based on community votes, similar to Curve's
             gauge system. This creates competition and alignment between protocols and voters.
           </p>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
-

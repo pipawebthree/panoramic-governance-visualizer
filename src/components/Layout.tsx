@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -15,12 +16,16 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-dark-bg">
-      <nav className="border-b border-dark-border bg-dark-surface">
+      <nav className="border-b border-dark-border glass-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-8">
-              <Link to="/" className="text-xl font-heading font-bold text-dark-accent hover:text-dark-accentHover transition-smooth">
-                Panoramic Governance
+              <Link 
+                to="/" 
+                className="text-xl font-heading font-bold text-dark-accent hover:text-dark-accentHover transition-smooth flex items-center gap-2"
+              >
+                <span>Abstract Panoramix</span>
+                <span className="text-2xl">🐧</span>
               </Link>
               <div className="flex space-x-1">
                 {navItems.map((item) => (
@@ -29,7 +34,7 @@ export default function Layout({ children }: LayoutProps) {
                     to={item.path}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-smooth ${
                       location.pathname === item.path
-                        ? 'bg-dark-accent text-black'
+                        ? 'bg-dark-accent text-black shadow-glow-green'
                         : 'text-dark-textMuted hover:text-dark-text hover:bg-dark-surfaceHover'
                     }`}
                   >
@@ -42,7 +47,14 @@ export default function Layout({ children }: LayoutProps) {
         </div>
       </nav>
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+        >
+          {children}
+        </motion.div>
       </main>
     </div>
   )

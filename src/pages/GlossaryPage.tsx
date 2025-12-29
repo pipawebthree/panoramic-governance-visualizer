@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion'
+
 interface GlossaryItem {
   term: string
   definition: string
@@ -71,7 +73,13 @@ const categories = Array.from(new Set(glossaryItems.map((item) => item.category)
 
 export default function GlossaryPage() {
   return (
-    <div className="space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-8"
+    >
       <div>
         <h1 className="text-4xl font-bold mb-4">Glossary & FAQ</h1>
         <p className="text-dark-textMuted text-lg">
@@ -79,28 +87,49 @@ export default function GlossaryPage() {
         </p>
       </div>
 
-      {categories.map((category) => (
-        <div key={category} className="bg-dark-surface rounded-lg p-6 border border-dark-border">
+      {categories.map((category, catIdx) => (
+        <motion.div
+          key={category}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: catIdx * 0.1 }}
+          className="glass-card-hover p-6"
+        >
           <h2 className="text-2xl font-semibold mb-6">{category}</h2>
           <div className="space-y-6">
             {glossaryItems
               .filter((item) => item.category === category)
-              .map((item) => (
-                <div key={item.term} className="border-b border-dark-border pb-4 last:border-0">
+              .map((item, idx) => (
+                <motion.div
+                  key={item.term}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: catIdx * 0.1 + idx * 0.05 }}
+                  className="border-b border-dark-border pb-4 last:border-0"
+                >
                   <h3 className="text-lg font-semibold text-dark-accent mb-2">
                     {item.term}
                   </h3>
                   <p className="text-dark-textMuted">{item.definition}</p>
-                </div>
+                </motion.div>
               ))}
           </div>
-        </div>
+        </motion.div>
       ))}
 
-      <div className="bg-dark-surface rounded-lg p-6 border border-dark-border">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: categories.length * 0.1 }}
+        className="glass-card-hover p-6"
+      >
         <h2 className="text-2xl font-semibold mb-4">Frequently Asked Questions</h2>
         <div className="space-y-6">
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: categories.length * 0.1 + 0.1 }}
+          >
             <h3 className="text-lg font-semibold mb-2">
               How is the fee pool distributed to users?
             </h3>
@@ -109,9 +138,13 @@ export default function GlossaryPage() {
               scores. Only users who meet the APT threshold are eligible. The distribution formula
               is: User Reward = Fee Pool × (User Activity Score / Sum of All Active Users' Activity Scores).
             </p>
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: categories.length * 0.1 + 0.15 }}
+          >
             <h3 className="text-lg font-semibold mb-2">
               How are protocol emissions calculated?
             </h3>
@@ -120,9 +153,13 @@ export default function GlossaryPage() {
               Protocol Emissions = Emission Budget × (Protocol Effective Votes / Sum of All Effective Votes).
               If liquid bounties are enabled, effective votes include the bounty boost multiplier.
             </p>
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: categories.length * 0.1 + 0.2 }}
+          >
             <h3 className="text-lg font-semibold mb-2">
               What happens if a user doesn't meet the APT threshold?
             </h3>
@@ -131,9 +168,13 @@ export default function GlossaryPage() {
               the fee pool. However, they can still participate in governance voting and may
               become active in future epochs if their activity increases.
             </p>
-          </div>
+          </motion.div>
           
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: categories.length * 0.1 + 0.25 }}
+          >
             <h3 className="text-lg font-semibold mb-2">
               Why use liquid bounties?
             </h3>
@@ -142,10 +183,9 @@ export default function GlossaryPage() {
               tokens. This creates a market mechanism where protocols can signal their value and
               commitment to the ecosystem. It's optional and can be toggled on or off.
             </p>
-          </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
-
