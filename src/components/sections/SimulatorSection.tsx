@@ -118,11 +118,32 @@ export default function SimulatorSection() {
       className="relative min-h-screen w-full py-20 px-4 sm:px-6 lg:px-8"
     >
       <div className="max-w-7xl mx-auto space-y-12">
+        {/* Aurora background */}
+        <div className="absolute inset-0 overflow-hidden opacity-20">
+          <motion.div
+            className="absolute top-1/3 right-1/4 w-96 h-96 bg-dark-blurple/10 rounded-full blur-3xl"
+            animate={{
+              x: [0, -80, 0],
+              y: [0, 40, 0],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center"
+          initial={{ opacity: 0, y: 80, scale: 0.9 }}
+          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ 
+            type: 'spring',
+            stiffness: 100,
+            damping: 20,
+            mass: 0.8,
+          }}
+          className="text-center relative z-10"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold mb-4 text-dark-accent">
             Epoch Simulator
@@ -133,25 +154,38 @@ export default function SimulatorSection() {
           </p>
         </motion.div>
 
-        {/* Presets */}
+        {/* Presets with staggered spring */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.1, duration: 0.6 }}
-          className="glass-card-hover p-6"
+          initial={{ opacity: 0, y: 50, rotateX: -15 }}
+          animate={isInView ? { opacity: 1, y: 0, rotateX: 0 } : {}}
+          transition={{ 
+            delay: 0.1,
+            type: 'spring',
+            stiffness: 120,
+            damping: 15,
+          }}
+          className="glass-card-hover p-6 relative z-10"
         >
           <h3 className="text-xl font-semibold mb-4">Presets</h3>
           <div className="flex flex-wrap gap-3">
-            {presets.map((preset) => (
+            {presets.map((preset, idx) => (
               <motion.button
                 key={preset.name}
+                initial={{ opacity: 0, scale: 0, rotate: -180 }}
+                animate={isInView ? { opacity: 1, scale: 1, rotate: 0 } : {}}
+                transition={{ 
+                  delay: 0.2 + idx * 0.1,
+                  type: 'spring',
+                  stiffness: 200,
+                  damping: 12,
+                }}
                 onClick={() => {
                   loadPreset(preset.name)
                   runSimulation()
                 }}
                 className="px-4 py-2 bg-dark-surfaceHover hover:bg-dark-accent hover:text-black text-dark-text rounded-lg transition-smooth"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
               >
                 {preset.name}
               </motion.button>
@@ -159,12 +193,17 @@ export default function SimulatorSection() {
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid lg:grid-cols-2 gap-8 relative z-10">
           {/* Controls */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.2, duration: 0.6 }}
+            initial={{ opacity: 0, x: -100, rotateY: -20 }}
+            animate={isInView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
+            transition={{ 
+              delay: 0.3,
+              type: 'spring',
+              stiffness: 100,
+              damping: 15,
+            }}
             className="space-y-6"
           >
             <div className="glass-card-hover p-6">
@@ -295,9 +334,14 @@ export default function SimulatorSection() {
 
           {/* Results */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            initial={{ opacity: 0, x: 100, rotateY: 20 }}
+            animate={isInView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
+            transition={{ 
+              delay: 0.4,
+              type: 'spring',
+              stiffness: 100,
+              damping: 15,
+            }}
             className="space-y-6"
           >
             <AnimatePresence mode="wait">

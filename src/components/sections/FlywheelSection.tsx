@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { useRef, useState, useEffect } from 'react'
+import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
 
 interface Node {
   id: string
@@ -59,25 +59,41 @@ export default function FlywheelSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 })
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
+  
+  // Animated stroke dash offset for flowing effect
+  const dashOffset = useMotionValue(0)
+  
+  useEffect(() => {
+    if (isInView) {
+      const controls = animate(dashOffset, 100, {
+        duration: 2,
+        repeat: Infinity,
+        ease: 'linear',
+      })
+      return controls.stop
+    }
+  }, [isInView, dashOffset])
 
-  // Node animation variants
+  // Node animation variants with spring physics
   const nodeVariants = {
     hidden: (i: number) => ({
-      x: i % 2 === 0 ? -100 : 100,
-      y: i % 2 === 0 ? -50 : 50,
+      x: i % 2 === 0 ? -150 : 150,
+      y: i % 2 === 0 ? -80 : 80,
       opacity: 0,
-      scale: 0.5,
+      scale: 0.3,
+      rotate: i % 2 === 0 ? -45 : 45,
     }),
     visible: {
       x: 0,
       y: 0,
       opacity: 1,
       scale: 1,
+      rotate: 0,
       transition: {
         type: 'spring' as const,
-        stiffness: 100,
-        damping: 15,
-        delay: 0.1,
+        stiffness: 120,
+        damping: 12,
+        mass: 0.8,
       },
     },
   }
@@ -87,11 +103,31 @@ export default function FlywheelSection() {
       ref={sectionRef}
       className="relative min-h-screen w-full py-20 px-4 sm:px-6 lg:px-8 flex items-center justify-center"
     >
-      <div className="max-w-7xl mx-auto w-full space-y-12">
+      {/* Aurora background */}
+      <div className="absolute inset-0 overflow-hidden opacity-30">
+        <motion.div
+          className="absolute top-1/2 left-1/3 w-72 h-72 bg-dark-accent/5 rounded-full blur-3xl"
+          animate={{
+            x: [0, 50, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto w-full space-y-12 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ 
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+          }}
           className="text-center"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold mb-4 text-dark-accent">
@@ -104,7 +140,15 @@ export default function FlywheelSection() {
           </p>
         </motion.div>
 
-        <div className="glass-card-hover p-8 md:p-12">
+        <div className="glass-card-hover p-8 md:p-12 relative">
+          {/* Neon glow effect */}
+          <div
+            className="absolute inset-0 rounded-xl opacity-50 blur-2xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(171, 254, 44, 0.2) 0%, transparent 70%)',
+            }}
+          />
+          
           <div className="relative" style={{ height: '400px' }}>
             <svg
               width="100%"
@@ -112,39 +156,22 @@ export default function FlywheelSection() {
               viewBox="0 0 800 300"
               className="overflow-visible"
             >
-              {/* Connections */}
-              {connections.map((conn, idx) => {
-                const fromNode = nodes.find((n) => n.id === conn.from)!
-                const toNode = nodes.find((n) => n.id === conn.to)!
-                
-                return (
-                  <motion.line
-                    key={`${conn.from}-${conn.to}`}
-                    x1={fromNode.x}
-                    y1={fromNode.y}
-                    x2={toNode.x}
-                    y2={toNode.y}
-                    stroke="#3A3550"
-                    strokeWidth={2}
-                    strokeDasharray="5,5"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={
-                      isInView
-                        ? { pathLength: 1, opacity: 1 }
-                        : { pathLength: 0, opacity: 0 }
-                    }
-                    transition={{
-                      duration: 0.8,
-                      delay: idx * 0.2,
-                      ease: 'easeInOut',
-                    }}
-                    markerEnd="url(#arrowhead)"
-                  />
-                )
-              })}
-              
-              {/* Arrow marker */}
+              {/* SVG Filters for Neon Glow */}
               <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="glow-strong">
+                  <feGaussianBlur stdDeviation="6" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
                 <marker
                   id="arrowhead"
                   markerWidth="10"
@@ -153,11 +180,50 @@ export default function FlywheelSection() {
                   refY="3"
                   orient="auto"
                 >
-                  <polygon points="0 0, 10 3, 0 6" fill="#ABFE2C" />
+                  <polygon points="0 0, 10 3, 0 6" fill="#ABFE2C" filter="url(#glow)" />
                 </marker>
               </defs>
 
-              {/* Nodes */}
+              {/* Animated Connections with Flowing Dashes */}
+              {connections.map((conn, idx) => {
+                const fromNode = nodes.find((n) => n.id === conn.from)!
+                const toNode = nodes.find((n) => n.id === conn.to)!
+                const strokeDashOffset = useTransform(dashOffset, (v) => -(v + idx * 20))
+                
+                return (
+                  <g key={`${conn.from}-${conn.to}`}>
+                    <motion.line
+                      x1={fromNode.x}
+                      y1={fromNode.y}
+                      x2={toNode.x}
+                      y2={toNode.y}
+                      stroke="#ABFE2C"
+                      strokeWidth={3}
+                      strokeDasharray="10,5"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={
+                        isInView
+                          ? { 
+                              pathLength: 1, 
+                              opacity: 1,
+                            }
+                          : { pathLength: 0, opacity: 0 }
+                      }
+                      transition={{
+                        pathLength: { duration: 1, delay: idx * 0.15, ease: 'easeInOut' },
+                        opacity: { duration: 0.5, delay: idx * 0.15 },
+                      }}
+                      style={{
+                        filter: 'url(#glow)',
+                        strokeDashoffset: strokeDashOffset,
+                      }}
+                      markerEnd="url(#arrowhead)"
+                    />
+                  </g>
+                )
+              })}
+
+              {/* Pulsing Nodes with Heartbeat */}
               {nodes.map((node, idx) => {
                 const isHovered = hoveredNode === node.id
                 
@@ -167,24 +233,42 @@ export default function FlywheelSection() {
                       custom={idx}
                       variants={nodeVariants}
                       initial="hidden"
-                      animate={isInView ? 'visible' : 'hidden'}
+                      animate={
+                        isInView
+                          ? {
+                              ...nodeVariants.visible,
+                              scale: isHovered ? 1.15 : [1, 1.05, 1],
+                            }
+                          : 'hidden'
+                      }
                       cx={node.x}
                       cy={node.y}
-                      r={isHovered ? 35 : 30}
+                      r={isHovered ? 40 : 30}
                       fill={isHovered ? '#8FE01C' : '#ABFE2C'}
                       stroke="#1E1B2E"
-                      strokeWidth={2}
+                      strokeWidth={3}
                       className="cursor-pointer"
                       onMouseEnter={() => setHoveredNode(node.id)}
                       onMouseLeave={() => setHoveredNode(null)}
-                      whileHover={{ scale: 1.1 }}
+                      transition={{
+                        ...nodeVariants.visible.transition,
+                        scale: {
+                          duration: isHovered ? 0.2 : 2,
+                          repeat: isHovered ? 0 : Infinity,
+                          ease: 'easeInOut',
+                          delay: idx * 0.2,
+                        },
+                      }}
                       style={{
                         filter: isHovered
-                          ? 'drop-shadow(0 0 15px #ABFE2C)'
-                          : 'drop-shadow(0 0 5px #ABFE2C)',
+                          ? 'url(#glow-strong)'
+                          : 'url(#glow)',
+                        boxShadow: isHovered
+                          ? '0 0 30px rgba(171, 254, 44, 0.8)'
+                          : '0 0 15px rgba(171, 254, 44, 0.5)',
                       }}
                     />
-                    <text
+                    <motion.text
                       x={node.x}
                       y={node.y - 50}
                       textAnchor="middle"
@@ -192,9 +276,12 @@ export default function FlywheelSection() {
                       fontSize="14"
                       fontWeight="600"
                       className="pointer-events-none"
+                      initial={{ opacity: 0 }}
+                      animate={isInView ? { opacity: 1 } : {}}
+                      transition={{ delay: 0.5 + idx * 0.1 }}
                     >
                       {node.label}
-                    </text>
+                    </motion.text>
                   </g>
                 )
               })}
@@ -204,9 +291,13 @@ export default function FlywheelSection() {
           {/* Tooltip */}
           {hoveredNode && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 10, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.9 }}
               className="mt-4 p-4 glass-card border-dark-borderGlow"
+              style={{
+                boxShadow: '0 0 30px rgba(171, 254, 44, 0.3)',
+              }}
             >
               <h3 className="font-semibold mb-2 text-dark-accent">
                 {nodes.find((n) => n.id === hoveredNode)?.label}
@@ -221,27 +312,51 @@ export default function FlywheelSection() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: 0.4, duration: 0.6 }}
+          transition={{ 
+            delay: 0.4,
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+          }}
           className="grid md:grid-cols-2 gap-6"
         >
-          <div className="glass-card-hover p-6">
+          <motion.div
+            initial={{ opacity: 0, x: -30, rotateY: -15 }}
+            animate={isInView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
+            transition={{ 
+              delay: 0.5,
+              type: 'spring',
+              stiffness: 100,
+              damping: 15,
+            }}
+            className="glass-card-hover p-6"
+          >
             <h3 className="text-xl font-semibold mb-4">Activity Participation Threshold (APT)</h3>
             <p className="text-dark-textMuted">
               Only users who meet a minimum activity score receive rewards from the fee pool.
               This ensures that rewards go to active participants, not passive holders.
             </p>
-          </div>
+          </motion.div>
           
-          <div className="glass-card-hover p-6">
+          <motion.div
+            initial={{ opacity: 0, x: 30, rotateY: 15 }}
+            animate={isInView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
+            transition={{ 
+              delay: 0.6,
+              type: 'spring',
+              stiffness: 100,
+              damping: 15,
+            }}
+            className="glass-card-hover p-6"
+          >
             <h3 className="text-xl font-semibold mb-4">Gauge-like Emissions</h3>
             <p className="text-dark-textMuted">
               Protocol emissions are allocated based on community votes, similar to Curve's
               gauge system. This creates competition and alignment between protocols and voters.
             </p>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
   )
 }
-

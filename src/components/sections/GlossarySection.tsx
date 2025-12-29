@@ -81,11 +81,32 @@ export default function GlossarySection() {
       ref={sectionRef}
       className="relative min-h-screen w-full py-20 px-4 sm:px-6 lg:px-8"
     >
-      <div className="max-w-7xl mx-auto space-y-12">
+      {/* Aurora background */}
+      <div className="absolute inset-0 overflow-hidden opacity-20">
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-dark-accent/5 rounded-full blur-3xl"
+          animate={{
+            x: [0, 60, 0],
+            y: [0, -40, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 80, scale: 0.9 }}
+          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ 
+            type: 'spring',
+            stiffness: 100,
+            damping: 20,
+            mass: 0.8,
+          }}
           className="text-center"
         >
           <h2 className="text-5xl md:text-6xl font-heading font-bold mb-4 text-dark-accent">
@@ -97,100 +118,127 @@ export default function GlossarySection() {
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category, catIdx) => (
-            <motion.div
-              key={category}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
-              transition={{ delay: catIdx * 0.1, duration: 0.5 }}
-              className="glass-card-hover p-6"
-            >
-              <h3 className="text-xl font-semibold mb-4 text-dark-accent">{category}</h3>
-              <div className="space-y-4">
-                {glossaryItems
-                  .filter((item) => item.category === category)
-                  .map((item, idx) => (
-                    <motion.div
-                      key={item.term}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={isInView ? { opacity: 1, x: 0 } : {}}
-                      transition={{ delay: catIdx * 0.1 + idx * 0.05 }}
-                      className="border-b border-dark-border pb-3 last:border-0"
-                    >
-                      <h4 className="text-base font-semibold text-dark-accent mb-1">
-                        {item.term}
-                      </h4>
-                      <p className="text-sm text-dark-textMuted">{item.definition}</p>
-                    </motion.div>
-                  ))}
-              </div>
-            </motion.div>
-          ))}
+          {categories.map((category, catIdx) => {
+            const angle = (catIdx * 360) / categories.length
+            const radius = 50
+            const x = Math.cos((angle * Math.PI) / 180) * radius
+            const y = Math.sin((angle * Math.PI) / 180) * radius
+            
+            return (
+              <motion.div
+                key={category}
+                initial={{ 
+                  opacity: 0, 
+                  x: x,
+                  y: y,
+                  scale: 0.3,
+                  rotate: angle - 90,
+                }}
+                animate={isInView ? { 
+                  opacity: 1, 
+                  x: 0, 
+                  y: 0, 
+                  scale: 1,
+                  rotate: 0,
+                } : {}}
+                transition={{ 
+                  delay: catIdx * 0.15,
+                  type: 'spring',
+                  stiffness: 150,
+                  damping: 12,
+                  mass: 0.7,
+                }}
+                className="glass-card-hover p-6"
+                whileHover={{ 
+                  scale: 1.05,
+                  rotate: 2,
+                  transition: { type: 'spring', stiffness: 400, damping: 10 }
+                }}
+              >
+                <h3 className="text-xl font-semibold mb-4 text-dark-accent">{category}</h3>
+                <div className="space-y-4">
+                  {glossaryItems
+                    .filter((item) => item.category === category)
+                    .map((item, idx) => (
+                      <motion.div
+                        key={item.term}
+                        initial={{ opacity: 0, x: -20, rotateX: -10 }}
+                        animate={isInView ? { opacity: 1, x: 0, rotateX: 0 } : {}}
+                        transition={{ 
+                          delay: catIdx * 0.15 + idx * 0.08,
+                          type: 'spring',
+                          stiffness: 200,
+                          damping: 15,
+                        }}
+                        className="border-b border-dark-border pb-3 last:border-0"
+                      >
+                        <h4 className="text-base font-semibold text-dark-accent mb-1">
+                          {item.term}
+                        </h4>
+                        <p className="text-sm text-dark-textMuted">{item.definition}</p>
+                      </motion.div>
+                    ))}
+                </div>
+              </motion.div>
+            )
+          })}
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ delay: categories.length * 0.1, duration: 0.6 }}
+          initial={{ opacity: 0, y: 60, scale: 0.9 }}
+          animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+          transition={{ 
+            delay: categories.length * 0.15,
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+          }}
           className="glass-card-hover p-8"
         >
           <h3 className="text-2xl font-semibold mb-6 text-dark-accent">Frequently Asked Questions</h3>
           <div className="grid md:grid-cols-2 gap-6">
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: categories.length * 0.1 + 0.1 }}
-            >
-              <h4 className="text-lg font-semibold mb-2">
-                How is the fee pool distributed to users?
-              </h4>
-              <p className="text-sm text-dark-textMuted">
-                The fee pool is distributed proportionally to active users based on their activity
-                scores. Only users who meet the APT threshold are eligible.
-              </p>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: categories.length * 0.1 + 0.15 }}
-            >
-              <h4 className="text-lg font-semibold mb-2">
-                How are protocol emissions calculated?
-              </h4>
-              <p className="text-sm text-dark-textMuted">
-                Emissions are allocated proportionally based on effective votes. If liquid bounties
-                are enabled, effective votes include the bounty boost multiplier.
-              </p>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: categories.length * 0.1 + 0.2 }}
-            >
-              <h4 className="text-lg font-semibold mb-2">
-                What happens if a user doesn't meet the APT threshold?
-              </h4>
-              <p className="text-sm text-dark-textMuted">
-                Users below the APT threshold are marked as inactive and receive zero rewards from
-                the fee pool. However, they can still participate in governance voting.
-              </p>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ delay: categories.length * 0.1 + 0.25 }}
-            >
-              <h4 className="text-lg font-semibold mb-2">
-                Why use liquid bounties?
-              </h4>
-              <p className="text-sm text-dark-textMuted">
-                Liquid bounties allow protocols to compete more directly for emissions by contributing
-                tokens. This creates a market mechanism where protocols can signal their value.
-              </p>
-            </motion.div>
+            {[
+              {
+                q: 'How is the fee pool distributed to users?',
+                a: 'The fee pool is distributed proportionally to active users based on their activity scores. Only users who meet the APT threshold are eligible.',
+              },
+              {
+                q: 'How are protocol emissions calculated?',
+                a: 'Emissions are allocated proportionally based on effective votes. If liquid bounties are enabled, effective votes include the bounty boost multiplier.',
+              },
+              {
+                q: 'What happens if a user doesn\'t meet the APT threshold?',
+                a: 'Users below the APT threshold are marked as inactive and receive zero rewards from the fee pool. However, they can still participate in governance voting.',
+              },
+              {
+                q: 'Why use liquid bounties?',
+                a: 'Liquid bounties allow protocols to compete more directly for emissions by contributing tokens. This creates a market mechanism where protocols can signal their value.',
+              },
+            ].map((faq, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30, rotateY: idx % 2 === 0 ? -15 : 15 }}
+                animate={isInView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
+                transition={{ 
+                  delay: categories.length * 0.15 + 0.1 + idx * 0.1,
+                  type: 'spring',
+                  stiffness: 120,
+                  damping: 12,
+                }}
+                whileHover={{ 
+                  scale: 1.02,
+                  rotateY: idx % 2 === 0 ? 5 : -5,
+                  transition: { type: 'spring', stiffness: 400, damping: 10 }
+                }}
+              >
+                <h4 className="text-lg font-semibold mb-2">
+                  {faq.q}
+                </h4>
+                <p className="text-sm text-dark-textMuted">
+                  {faq.a}
+                </p>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </div>
