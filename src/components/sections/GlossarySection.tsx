@@ -117,67 +117,58 @@ export default function GlossarySection() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {categories.map((category, catIdx) => {
-            const angle = (catIdx * 360) / categories.length
-            const radius = 50
-            const x = Math.cos((angle * Math.PI) / 180) * radius
-            const y = Math.sin((angle * Math.PI) / 180) * radius
+            const categoryItems = glossaryItems.filter((item) => item.category === category)
             
             return (
               <motion.div
                 key={category}
                 initial={{ 
                   opacity: 0, 
-                  x: x,
-                  y: y,
-                  scale: 0.3,
-                  rotate: angle - 90,
+                  y: 50,
+                  scale: 0.9,
                 }}
                 animate={isInView ? { 
                   opacity: 1, 
-                  x: 0, 
                   y: 0, 
                   scale: 1,
-                  rotate: 0,
                 } : {}}
                 transition={{ 
-                  delay: catIdx * 0.15,
+                  delay: catIdx * 0.1,
                   type: 'spring',
                   stiffness: 150,
-                  damping: 12,
-                  mass: 0.7,
+                  damping: 15,
+                  mass: 0.8,
                 }}
-                className="glass-card-hover p-6"
+                className="glass-card-hover p-5 h-full flex flex-col"
                 whileHover={{ 
-                  scale: 1.05,
-                  rotate: 2,
+                  scale: 1.02,
+                  y: -5,
                   transition: { type: 'spring', stiffness: 400, damping: 10 }
                 }}
               >
-                <h3 className="text-xl font-semibold mb-4 text-dark-accent">{category}</h3>
-                <div className="space-y-4">
-                  {glossaryItems
-                    .filter((item) => item.category === category)
-                    .map((item, idx) => (
-                      <motion.div
-                        key={item.term}
-                        initial={{ opacity: 0, x: -20, rotateX: -10 }}
-                        animate={isInView ? { opacity: 1, x: 0, rotateX: 0 } : {}}
-                        transition={{ 
-                          delay: catIdx * 0.15 + idx * 0.08,
-                          type: 'spring',
-                          stiffness: 200,
-                          damping: 15,
-                        }}
-                        className="border-b border-dark-border pb-3 last:border-0"
-                      >
-                        <h4 className="text-base font-semibold text-dark-accent mb-1">
-                          {item.term}
-                        </h4>
-                        <p className="text-sm text-dark-textMuted">{item.definition}</p>
-                      </motion.div>
-                    ))}
+                <h3 className="text-lg font-semibold mb-3 text-dark-accent">{category}</h3>
+                <div className="space-y-3 flex-1">
+                  {categoryItems.map((item, idx) => (
+                    <motion.div
+                      key={item.term}
+                      initial={{ opacity: 0, x: -15 }}
+                      animate={isInView ? { opacity: 1, x: 0 } : {}}
+                      transition={{ 
+                        delay: catIdx * 0.1 + idx * 0.05,
+                        type: 'spring',
+                        stiffness: 200,
+                        damping: 15,
+                      }}
+                      className="border-b border-dark-border pb-2 last:border-0"
+                    >
+                      <h4 className="text-sm font-semibold text-dark-accent mb-1">
+                        {item.term}
+                      </h4>
+                      <p className="text-xs text-dark-textMuted leading-relaxed">{item.definition}</p>
+                    </motion.div>
+                  ))}
                 </div>
               </motion.div>
             )
@@ -185,18 +176,18 @@ export default function GlossarySection() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 60, scale: 0.9 }}
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
           transition={{ 
-            delay: categories.length * 0.15,
+            delay: categories.length * 0.1 + 0.2,
             type: 'spring',
             stiffness: 100,
             damping: 15,
           }}
-          className="glass-card-hover p-8"
+          className="glass-card-hover p-6"
         >
-          <h3 className="text-2xl font-semibold mb-6 text-dark-accent">Frequently Asked Questions</h3>
-          <div className="grid md:grid-cols-2 gap-6">
+          <h3 className="text-xl font-semibold mb-4 text-dark-accent">Frequently Asked Questions</h3>
+          <div className="grid md:grid-cols-2 gap-4">
             {[
               {
                 q: 'How is the fee pool distributed to users?',
@@ -217,24 +208,24 @@ export default function GlossarySection() {
             ].map((faq, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30, rotateY: idx % 2 === 0 ? -15 : 15 }}
-                animate={isInView ? { opacity: 1, x: 0, rotateY: 0 } : {}}
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ 
-                  delay: categories.length * 0.15 + 0.1 + idx * 0.1,
+                  delay: categories.length * 0.1 + 0.3 + idx * 0.08,
                   type: 'spring',
-                  stiffness: 120,
-                  damping: 12,
+                  stiffness: 150,
+                  damping: 15,
                 }}
                 whileHover={{ 
                   scale: 1.02,
-                  rotateY: idx % 2 === 0 ? 5 : -5,
+                  y: -2,
                   transition: { type: 'spring', stiffness: 400, damping: 10 }
                 }}
               >
-                <h4 className="text-lg font-semibold mb-2">
+                <h4 className="text-base font-semibold mb-1 text-dark-accent">
                   {faq.q}
                 </h4>
-                <p className="text-sm text-dark-textMuted">
+                <p className="text-sm text-dark-textMuted leading-relaxed">
                   {faq.a}
                 </p>
               </motion.div>

@@ -15,7 +15,7 @@ function App() {
         }}
       />
 
-      {/* Hero Section with floating penguin */}
+      {/* Hero Section with typographic glitch */}
       <HeroSection />
       
       {/* Flywheel Section with animated SVG paths */}
@@ -41,22 +41,14 @@ function App() {
         className="relative w-full py-12 px-4 sm:px-6 lg:px-8 border-t border-dark-border"
       >
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-dark-textMuted text-sm">
-            Built by{' '}
-            <motion.a
-              href="https://twitter.com/pipawebthree"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-dark-textMuted hover:text-dark-accent transition-all duration-300 inline-block"
-              whileHover={{ 
-                scale: 1.05,
-                color: '#ABFE2C',
-                textShadow: '0 0 10px rgba(171, 254, 44, 0.5)',
-              }}
-            >
-              <strong>@pipawebthree</strong>
-            </motion.a>
-          </p>
+          <a
+            href="https://twitter.com/pipawebthree"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-dark-textMuted hover:text-[#ABFE2C] transition-colors duration-300 inline-block"
+          >
+            Built by <strong>@pipawebthree</strong>
+          </a>
         </div>
       </motion.footer>
     </div>

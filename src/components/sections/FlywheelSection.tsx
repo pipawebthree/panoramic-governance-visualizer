@@ -1,5 +1,6 @@
-import { useRef, useState, useEffect } from 'react'
-import { motion, useInView, useMotionValue, animate, useTransform } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { motion, useInView } from 'framer-motion'
+import { AnimatedConnection } from '../AnimatedConnection'
 
 interface Node {
   id: string
@@ -9,7 +10,7 @@ interface Node {
   y: number
 }
 
-// Circular layout for nodes
+// Circular layout for nodes - perfectly symmetrical
 const centerX = 400
 const centerY = 200
 const radius = 120
@@ -61,95 +62,10 @@ const connections = [
   { from: 'votes', to: 'users' }, // Complete the circle
 ]
 
-// Generate curved Bezier path between two nodes
-const getCurvedPath = (from: Node, to: Node): string => {
-  const dx = to.x - from.x
-  const dy = to.y - from.y
-  const distance = Math.sqrt(dx * dx + dy * dy)
-  const curvature = distance * 0.3
-  
-  // Calculate control points for smooth curve
-  const angle = Math.atan2(dy, dx)
-  const perpAngle = angle + Math.PI / 2
-  
-  const cp1x = from.x + Math.cos(perpAngle) * curvature
-  const cp1y = from.y + Math.sin(perpAngle) * curvature
-  const cp2x = to.x + Math.cos(perpAngle) * curvature
-  const cp2y = to.y + Math.sin(perpAngle) * curvature
-  
-  return `M ${from.x} ${from.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${to.x} ${to.y}`
-}
-
-// Animated Path Component
-function AnimatedPath({ 
-  pathD, 
-  idx, 
-  isInView 
-}: { 
-  pathD: string
-  idx: number
-  isInView: boolean 
-}) {
-  const dashOffset = useMotionValue(0)
-  
-  useEffect(() => {
-    if (isInView) {
-      const controls = animate(dashOffset, 25, {
-        duration: 1.5,
-        repeat: Infinity,
-        ease: 'linear',
-      })
-      return controls.stop
-    }
-  }, [isInView, dashOffset])
-  
-  return (
-    <motion.path
-      d={pathD}
-      fill="none"
-      stroke="#ABFE2C"
-      strokeWidth={4}
-      strokeDasharray="15,10"
-      initial={{ pathLength: 0, opacity: 0 }}
-      animate={
-        isInView
-          ? { 
-              pathLength: 1, 
-              opacity: 1,
-            }
-          : { pathLength: 0, opacity: 0 }
-      }
-      transition={{
-        pathLength: { duration: 1, delay: idx * 0.2, ease: 'easeInOut' },
-        opacity: { duration: 0.5, delay: idx * 0.2 },
-      }}
-      style={{
-        filter: 'url(#glow)',
-        strokeDashoffset: dashOffset,
-      }}
-      markerEnd="url(#arrowhead)"
-    />
-  )
-}
-
 export default function FlywheelSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const isInView = useInView(sectionRef, { once: true, amount: 0.3 })
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
-  
-  // Animated stroke dash offset for flowing effect
-  const dashOffset = useMotionValue(0)
-  
-  useEffect(() => {
-    if (isInView) {
-      const controls = animate(dashOffset, 100, {
-        duration: 2,
-        repeat: Infinity,
-        ease: 'linear',
-      })
-      return controls.stop
-    }
-  }, [isInView, dashOffset])
 
   // Node animation variants with spring physics
   const nodeVariants = {
@@ -227,11 +143,28 @@ export default function FlywheelSection() {
           />
           
           <div className="relative" style={{ height: '500px' }}>
+            {/* Animated Connections */}
+            {connections.map((conn) => {
+              const fromNode = nodes.find((n) => n.id === conn.from)!
+              const toNode = nodes.find((n) => n.id === conn.to)!
+              
+              return (
+                <AnimatedConnection
+                  key={`${conn.from}-${conn.to}`}
+                  startX={fromNode.x}
+                  startY={fromNode.y}
+                  endX={toNode.x}
+                  endY={toNode.y}
+                />
+              )
+            })}
+
+            {/* SVG for nodes and filters */}
             <svg
               width="100%"
               height="100%"
               viewBox="0 0 800 400"
-              className="overflow-visible"
+              className="overflow-visible relative z-10"
             >
               {/* SVG Filters for Neon Glow */}
               <defs>
@@ -260,19 +193,6 @@ export default function FlywheelSection() {
                   <polygon points="0 0, 10 3, 0 6" fill="#ABFE2C" filter="url(#glow)" />
                 </marker>
               </defs>
-
-              {/* Animated Curved Connections with Flowing Dashes */}
-              {connections.map((conn, idx) => {
-                const fromNode = nodes.find((n) => n.id === conn.from)!
-                const toNode = nodes.find((n) => n.id === conn.to)!
-                const pathD = getCurvedPath(fromNode, toNode)
-                
-                return (
-                  <g key={`${conn.from}-${conn.to}`}>
-                    <AnimatedPath pathD={pathD} idx={idx} isInView={isInView} />
-                  </g>
-                )
-              })}
 
               {/* Pulsing Nodes with Heartbeat */}
               {nodes.map((node, idx) => {
