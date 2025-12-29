@@ -3,10 +3,15 @@ import HeroSection from './components/sections/HeroSection'
 import FlywheelSection from './components/sections/FlywheelSection'
 import SimulatorSection from './components/sections/SimulatorSection'
 import GlossarySection from './components/sections/GlossarySection'
+import ParticleBackground from './components/ParticleBackground'
+import FloatingDock from './components/FloatingDock'
 
 function App() {
   return (
     <div className="relative w-full overflow-x-hidden bg-dark-bg">
+      {/* Particle Background Canvas */}
+      <ParticleBackground />
+
       {/* Global Film Grain Overlay */}
       <div
         className="fixed inset-0 opacity-[0.02] pointer-events-none z-50"
@@ -51,6 +56,9 @@ function App() {
           </a>
         </div>
       </motion.footer>
+
+      {/* Floating Dock Navigation */}
+      <FloatingDock />
     </div>
   )
 }

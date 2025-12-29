@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { presets } from '@/lib/sim/presets'
 import { Protocol } from '@/lib/sim/types'
+import CitizenCard from '../CitizenCard'
 
 // Helper function to get emoji for protocol
 const getProtocolEmoji = (protocol: Protocol): string => {
@@ -112,8 +113,29 @@ export default function SimulatorSection() {
         .sort((a, b) => b - a)[Math.floor(result.users.length * 0.1)] || 0
     : 0
 
+  // Generate random citizen ID
+  const generateCitizenId = () => {
+    return Array.from({ length: 8 }, () => 
+      Math.floor(Math.random() * 16).toString(16)
+    ).join('').toUpperCase()
+  }
+
+  const [citizenId] = useState(() => generateCitizenId())
+
+  // Get top protocol and yield amount for CitizenCard
+  const topProtocol = result 
+    ? result.protocols.reduce((prev, current) => 
+        current.emissionAllocation > prev.emissionAllocation ? current : prev
+      )
+    : null
+  
+  const userYield = result
+    ? result.users.reduce((sum, user) => sum + user.rewardFromFees, 0) / result.users.length
+    : 0
+
   return (
     <section
+      id="simulator"
       ref={sectionRef}
       className="relative min-h-screen w-full py-20 px-4 sm:px-6 lg:px-8"
     >
@@ -354,6 +376,21 @@ export default function SimulatorSection() {
                   transition={{ duration: 0.3 }}
                   className="space-y-6"
                 >
+                  {/* Abstract Citizen Card */}
+                  {topProtocol && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, rotateY: -15 }}
+                      animate={{ opacity: 1, y: 0, rotateY: 0 }}
+                      transition={{ delay: 0.2, type: 'spring', stiffness: 100, damping: 15 }}
+                    >
+                      <CitizenCard
+                        citizenId={citizenId}
+                        yieldAmount={userYield}
+                        votedProtocol={topProtocol}
+                      />
+                    </motion.div>
+                  )}
+
                   {/* Fee Pool */}
                   <div className="glass-card-hover p-6">
                     <h3 className="text-xl font-semibold mb-4">Fee Pool</h3>

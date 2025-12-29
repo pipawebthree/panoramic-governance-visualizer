@@ -78,6 +78,7 @@ export default function GlossarySection() {
 
   return (
     <section
+      id="glossary"
       ref={sectionRef}
       className="relative min-h-screen w-full py-20 px-4 sm:px-6 lg:px-8"
     >
