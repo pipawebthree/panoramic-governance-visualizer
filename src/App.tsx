@@ -29,15 +29,33 @@ function App() {
       
       {/* Footer */}
       <motion.footer
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
+        transition={{ 
+          duration: 0.6,
+          type: 'spring',
+          stiffness: 100,
+          damping: 15,
+        }}
         className="relative w-full py-12 px-4 sm:px-6 lg:px-8 border-t border-dark-border"
       >
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-dark-textMuted text-sm">
-            Abstract Panoramix 🐧 — Panoramic Governance Visualizer
+            Built by{' '}
+            <motion.a
+              href="https://twitter.com/pipawebthree"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-dark-textMuted hover:text-dark-accent transition-all duration-300 inline-block"
+              whileHover={{ 
+                scale: 1.05,
+                color: '#ABFE2C',
+                textShadow: '0 0 10px rgba(171, 254, 44, 0.5)',
+              }}
+            >
+              <strong>@pipawebthree</strong>
+            </motion.a>
           </p>
         </div>
       </motion.footer>

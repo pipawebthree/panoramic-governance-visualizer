@@ -1,5 +1,7 @@
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+
+const glitchChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
 
 export default function HeroSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
@@ -8,18 +10,46 @@ export default function HeroSection() {
     offset: ['start start', 'end start'],
   })
 
-  // Advanced parallax transforms
-  const penguinY = useTransform(scrollYProgress, [0, 1], [0, -300])
-  const penguinScale = useTransform(scrollYProgress, [0, 1], [1, 0.6])
-  const penguinOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
-  const penguinBlur = useTransform(scrollYProgress, [0, 0.6], [0, 30])
-  const penguinRotate = useTransform(scrollYProgress, [0, 1], [0, 15])
-  
-  // Text parallax (moves slower)
-  const textY = useTransform(scrollYProgress, [0, 1], [0, -150])
-  const textOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0])
-  const textScale = useTransform(scrollYProgress, [0, 1], [1, 1.2])
+  const [glitchText, setGlitchText] = useState('ABSTRACT PANORAMIX')
+  const [isGlitching, setIsGlitching] = useState(false)
 
+  // Parallax effects
+  const textY = useTransform(scrollYProgress, [0, 1], [0, -200])
+  const textOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0])
+  const textScale = useTransform(scrollYProgress, [0, 1], [1, 0.8])
+
+  // Glitch effect
+  useEffect(() => {
+    const glitchInterval = setInterval(() => {
+      setIsGlitching(true)
+      const originalText = 'ABSTRACT PANORAMIX'
+      let iterations = 0
+      
+      const glitchAnimation = setInterval(() => {
+        setGlitchText(
+          originalText
+            .split('')
+            .map((char, index) => {
+              if (index < iterations) {
+                return originalText[index]
+              }
+              return glitchChars[Math.floor(Math.random() * glitchChars.length)]
+            })
+            .join('')
+        )
+
+        if (iterations >= originalText.length) {
+          clearInterval(glitchAnimation)
+          setIsGlitching(false)
+          setGlitchText(originalText)
+        }
+
+        iterations += 1 / 3
+      }, 30)
+    }, 3000)
+
+    return () => clearInterval(glitchInterval)
+  }, [])
 
   return (
     <section
@@ -67,66 +97,59 @@ export default function HeroSection() {
         }}
       />
 
-      {/* Parallax Text - Moves slower than penguin */}
+      {/* Typographic Hero */}
       <motion.div
         style={{
           y: textY,
           opacity: textOpacity,
           scale: textScale,
         }}
-        className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+        className="relative z-10 text-center"
       >
-        <h1 className="text-8xl md:text-9xl lg:text-[12rem] font-heading font-bold text-dark-accent/20 select-none">
-          ABSTRACT
-          <br />
-          PANORAMIX
-        </h1>
-      </motion.div>
-      
-      {/* Floating Penguin with Zero-G Physics */}
-      <motion.div
-        style={{
-          scale: penguinScale,
-          opacity: penguinOpacity,
-          filter: `blur(${penguinBlur}px)`,
-        }}
-        className="relative z-10"
-        animate={{
-          // Continuous sine wave levitation
-          y: [0, -30, 0],
-          rotate: [0, 3, -3, 0],
-        }}
-        transition={{
-          y: {
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          },
-          rotate: {
-            duration: 4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          },
-        }}
-      >
-        <motion.div
+        {/* Main Title with Glitch Effect */}
+        <motion.h1
+          className="text-7xl md:text-8xl lg:text-9xl font-heading font-bold text-dark-accent mb-6 select-none"
           style={{
-            y: penguinY,
-            rotate: penguinRotate,
+            textShadow: '0 0 40px rgba(171, 254, 44, 0.5), 0 0 80px rgba(171, 254, 44, 0.3)',
+          }}
+          animate={isGlitching ? {
+            x: [0, -2, 2, -2, 2, 0],
+            y: [0, 2, -2, 2, -2, 0],
+          } : {}}
+          transition={{
+            duration: 0.1,
+            repeat: isGlitching ? 5 : 0,
           }}
         >
-          <motion.img
-            src="/penguin.png"
-            alt="Abstract Panoramix Penguin"
-            className="w-64 h-64 md:w-96 md:h-96 object-contain mix-blend-multiply"
-            style={{
-              filter: 'drop-shadow(0 0 40px rgba(171, 254, 44, 0.3))',
-            }}
-          />
-        </motion.div>
+          {glitchText.split('').map((char, index) => (
+            <motion.span
+              key={index}
+              className="inline-block"
+              animate={isGlitching ? {
+                color: ['#ABFE2C', '#7B61FF', '#ABFE2C'],
+              } : {}}
+              transition={{
+                duration: 0.1,
+                delay: index * 0.01,
+              }}
+            >
+              {char === ' ' ? '\u00A0' : char}
+            </motion.span>
+          ))}
+        </motion.h1>
+
+        {/* Subtitle */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="text-xl md:text-2xl text-dark-textMuted font-light"
+        >
+          Visualizing the future of Consumer Crypto Governance
+        </motion.p>
       </motion.div>
 
-      {/* Scroll indicator with enhanced animation */}
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 1 }}
         animate={{ opacity: [1, 0.3, 1] }}

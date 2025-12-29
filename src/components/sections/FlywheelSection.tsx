@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
+import { motion, useInView, useMotionValue, animate, useTransform } from 'framer-motion'
 
 interface Node {
   id: string
@@ -9,51 +9,128 @@ interface Node {
   y: number
 }
 
+// Circular layout for nodes
+const centerX = 400
+const centerY = 200
+const radius = 120
+
 const nodes: Node[] = [
   {
     id: 'users',
     label: 'Users/Voters',
     description: 'Active participants who engage with protocols and vote on governance proposals',
-    x: 100,
-    y: 200,
+    x: centerX,
+    y: centerY - radius, // Top
   },
   {
     id: 'protocols',
     label: 'Protocols',
     description: 'DeFi protocols that receive emissions based on community votes',
-    x: 300,
-    y: 200,
+    x: centerX + radius * 0.707, // Right-top
+    y: centerY - radius * 0.707,
   },
   {
     id: 'sequencer',
     label: 'Sequencer Fees',
     description: 'Fees collected from network transactions, with a portion going to the sequencer',
-    x: 500,
-    y: 200,
+    x: centerX + radius, // Right
+    y: centerY,
   },
   {
     id: 'rewards',
     label: 'Rewards',
     description: 'Fee pool distributed to active users who meet the Activity Participation Threshold (APT)',
-    x: 700,
-    y: 200,
+    x: centerX + radius * 0.707, // Right-bottom
+    y: centerY + radius * 0.707,
   },
   {
     id: 'votes',
     label: 'Votes',
     description: 'Users vote on protocol emissions allocation, creating a feedback loop',
-    x: 400,
-    y: 100,
+    x: centerX, // Bottom
+    y: centerY + radius,
   },
 ]
 
+// Circular flow connections
 const connections = [
   { from: 'users', to: 'protocols' },
   { from: 'protocols', to: 'sequencer' },
   { from: 'sequencer', to: 'rewards' },
   { from: 'rewards', to: 'votes' },
-  { from: 'votes', to: 'protocols' },
+  { from: 'votes', to: 'users' }, // Complete the circle
 ]
+
+// Generate curved Bezier path between two nodes
+const getCurvedPath = (from: Node, to: Node): string => {
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const distance = Math.sqrt(dx * dx + dy * dy)
+  const curvature = distance * 0.3
+  
+  // Calculate control points for smooth curve
+  const angle = Math.atan2(dy, dx)
+  const perpAngle = angle + Math.PI / 2
+  
+  const cp1x = from.x + Math.cos(perpAngle) * curvature
+  const cp1y = from.y + Math.sin(perpAngle) * curvature
+  const cp2x = to.x + Math.cos(perpAngle) * curvature
+  const cp2y = to.y + Math.sin(perpAngle) * curvature
+  
+  return `M ${from.x} ${from.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${to.x} ${to.y}`
+}
+
+// Animated Path Component
+function AnimatedPath({ 
+  pathD, 
+  idx, 
+  isInView 
+}: { 
+  pathD: string
+  idx: number
+  isInView: boolean 
+}) {
+  const dashOffset = useMotionValue(0)
+  
+  useEffect(() => {
+    if (isInView) {
+      const controls = animate(dashOffset, 25, {
+        duration: 1.5,
+        repeat: Infinity,
+        ease: 'linear',
+      })
+      return controls.stop
+    }
+  }, [isInView, dashOffset])
+  
+  return (
+    <motion.path
+      d={pathD}
+      fill="none"
+      stroke="#ABFE2C"
+      strokeWidth={4}
+      strokeDasharray="15,10"
+      initial={{ pathLength: 0, opacity: 0 }}
+      animate={
+        isInView
+          ? { 
+              pathLength: 1, 
+              opacity: 1,
+            }
+          : { pathLength: 0, opacity: 0 }
+      }
+      transition={{
+        pathLength: { duration: 1, delay: idx * 0.2, ease: 'easeInOut' },
+        opacity: { duration: 0.5, delay: idx * 0.2 },
+      }}
+      style={{
+        filter: 'url(#glow)',
+        strokeDashoffset: dashOffset,
+      }}
+      markerEnd="url(#arrowhead)"
+    />
+  )
+}
 
 export default function FlywheelSection() {
   const sectionRef = useRef<HTMLDivElement>(null)
@@ -77,11 +154,11 @@ export default function FlywheelSection() {
   // Node animation variants with spring physics
   const nodeVariants = {
     hidden: (i: number) => ({
-      x: i % 2 === 0 ? -150 : 150,
-      y: i % 2 === 0 ? -80 : 80,
+      x: 0,
+      y: 0,
       opacity: 0,
       scale: 0.3,
-      rotate: i % 2 === 0 ? -45 : 45,
+      rotate: -180,
     }),
     visible: {
       x: 0,
@@ -149,11 +226,11 @@ export default function FlywheelSection() {
             }}
           />
           
-          <div className="relative" style={{ height: '400px' }}>
+          <div className="relative" style={{ height: '500px' }}>
             <svg
               width="100%"
               height="100%"
-              viewBox="0 0 800 300"
+              viewBox="0 0 800 400"
               className="overflow-visible"
             >
               {/* SVG Filters for Neon Glow */}
@@ -184,41 +261,15 @@ export default function FlywheelSection() {
                 </marker>
               </defs>
 
-              {/* Animated Connections with Flowing Dashes */}
+              {/* Animated Curved Connections with Flowing Dashes */}
               {connections.map((conn, idx) => {
                 const fromNode = nodes.find((n) => n.id === conn.from)!
                 const toNode = nodes.find((n) => n.id === conn.to)!
-                const strokeDashOffset = useTransform(dashOffset, (v) => -(v + idx * 20))
+                const pathD = getCurvedPath(fromNode, toNode)
                 
                 return (
                   <g key={`${conn.from}-${conn.to}`}>
-                    <motion.line
-                      x1={fromNode.x}
-                      y1={fromNode.y}
-                      x2={toNode.x}
-                      y2={toNode.y}
-                      stroke="#ABFE2C"
-                      strokeWidth={3}
-                      strokeDasharray="10,5"
-                      initial={{ pathLength: 0, opacity: 0 }}
-                      animate={
-                        isInView
-                          ? { 
-                              pathLength: 1, 
-                              opacity: 1,
-                            }
-                          : { pathLength: 0, opacity: 0 }
-                      }
-                      transition={{
-                        pathLength: { duration: 1, delay: idx * 0.15, ease: 'easeInOut' },
-                        opacity: { duration: 0.5, delay: idx * 0.15 },
-                      }}
-                      style={{
-                        filter: 'url(#glow)',
-                        strokeDashoffset: strokeDashOffset,
-                      }}
-                      markerEnd="url(#arrowhead)"
-                    />
+                    <AnimatedPath pathD={pathD} idx={idx} isInView={isInView} />
                   </g>
                 )
               })}
